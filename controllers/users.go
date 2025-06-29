@@ -137,8 +137,8 @@ func UpdatePassword(ctx *gin.Context) {
 	newData := models.Password{}
 
 	err := ctx.ShouldBind(&newData)
-	fmt.Println("id: ", userId)
-	fmt.Println("ctrl: ", newData)
+	// fmt.Println("id: ", userId)
+	// fmt.Println("ctrl: ", newData)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, models.Response{
 			Success: false,
@@ -164,6 +164,8 @@ func UpdatePassword(ctx *gin.Context) {
 }
 
 func UpdatePin(ctx *gin.Context) {
+	userIdx, _ := ctx.Get("userId")
+	userId := int(userIdx.(float64))
 	newData := models.Pin{}
 	err := ctx.ShouldBind(&newData)
 	if err != nil {
@@ -174,11 +176,11 @@ func UpdatePin(ctx *gin.Context) {
 		return
 	}
 
-	err = models.UpdatePin(newData)
+	err = models.UpdatePin(newData, userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
-			Message: "Failed Pin Password",
+			Message: "Failed Update Pin",
 			Errors:  err.Error(),
 		})
 		return
@@ -186,7 +188,7 @@ func UpdatePin(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, models.Response{
 		Success: true,
-		Message: "Success Pin Password",
+		Message: "Success Update Pin",
 	})
 }
 

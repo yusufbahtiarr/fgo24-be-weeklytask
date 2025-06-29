@@ -52,8 +52,7 @@ type Password struct {
 }
 
 type Pin struct {
-	Email string `form:"email" binding:"required,email"`
-	Pin   string `form:"pin"`
+	Pin string `form:"pin" binding:"required,len=6"`
 }
 
 type Transaction struct {
@@ -178,8 +177,8 @@ func UpdatePassword(newData Password, userId int) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("oldData:", oldData)
-	fmt.Println("newData:", newData)
+	// fmt.Println("oldData:", oldData)
+	// fmt.Println("newData:", newData)
 
 	if newData.ExistPassword == "" && newData.NewPassword == "" && newData.ConfirmPassword == "" {
 		return fmt.Errorf("input password cannot be empty")
@@ -198,14 +197,14 @@ func UpdatePassword(newData Password, userId int) error {
 	return err
 }
 
-func UpdatePin(newData Pin) error {
+func UpdatePin(newData Pin, userId int) error {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	oldData, err := FindUserByEmail(newData.Email)
+	oldData, err := FindUserByID(userId)
 	if err != nil {
 		return err
 	}
@@ -218,7 +217,7 @@ func UpdatePin(newData Pin) error {
 		oldData.Pin = newData.Pin
 	}
 
-	_, err = conn.Exec(context.Background(), `UPDATE users set password =  $1 where id=$4`, oldData.Password, oldData.ID)
+	_, err = conn.Exec(context.Background(), `UPDATE users set password =  $1 where id=$2`, oldData.Password, userId)
 
 	return err
 }
