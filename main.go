@@ -10,17 +10,14 @@ import (
 )
 
 func main() {
+	godotenv.Load()
 	r := gin.Default()
 
 	if os.Getenv("MODE") == "release" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// r.Use(middlewares.Cors())
-
 	routers.CombineRouter(r)
-
-	godotenv.Load()
 
 	r.Run(fmt.Sprintf(":%s", os.Getenv("APP_PORT")))
 }

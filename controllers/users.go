@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 )
 
 func GetAllUser(ctx *gin.Context) {
@@ -85,5 +86,95 @@ func UpdateProfile(ctx *gin.Context) {
 		Success: true,
 		Message: "Success Update User",
 	})
+}
 
+func UpdatePassword(ctx *gin.Context) {
+	newData := models.Password{}
+	err := ctx.ShouldBind(&newData)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, models.Response{
+			Success: false,
+			Message: "Invalid input",
+		})
+		return
+	}
+
+	err = models.UpdatePassword(newData)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.Response{
+			Success: false,
+			Message: "Failed Update Password",
+			Errors:  err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, models.Response{
+		Success: true,
+		Message: "Success Update Password",
+	})
+}
+
+func UpdatePin(ctx *gin.Context) {
+	newData := models.Pin{}
+	err := ctx.ShouldBind(&newData)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, models.Response{
+			Success: false,
+			Message: "Invalid input",
+		})
+		return
+	}
+
+	err = models.UpdatePin(newData)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.Response{
+			Success: false,
+			Message: "Failed Pin Password",
+			Errors:  err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, models.Response{
+		Success: true,
+		Message: "Success Pin Password",
+	})
+}
+
+func SearchUserByName(ctx *gin.Context) {
+	searchQy := ctx.Query("search")
+
+	if searchQy == "" {
+		ctx.JSON(http.StatusBadRequest, models.Response{
+			Success: false,
+			Message: "Search query parameter 'search' is required",
+		})
+		return
+	}
+
+	users, err := models.SearchUserByName(searchQy)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, models.Response{
+				Success: false,
+				Message: "no users matching the search criteria",
+				Results: []models.User{},
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, models.Response{
+			Success: false,
+			Message: "Failed to search users by name",
+			Errors:  err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, models.Response{
+		Success: true,
+		Message: "Users found by name",
+		Results: users,
+	})
 }

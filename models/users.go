@@ -36,7 +36,6 @@ type Register struct {
 }
 
 type Password struct {
-	ID              int    `db:"id"  form:"id"`
 	Email           string `form:"email" binding:"required,email"`
 	ExistPassword   string `form:"exist_password" binding:"required,exist_password"`
 	NewPassword     string `form:"new_password" binding:"required,new_password"`
@@ -61,23 +60,23 @@ type Transaction struct {
 
 type Users []User
 
-func FindAllUsers() ([]Users, error) {
+func FindAllUsers() ([]User, error) {
 	conn, err := utils.DBConnect()
 
 	if err != nil {
-		return []Users{}, err
+		return []User{}, err
 	}
 	defer conn.Close()
 
-	query := "SELECT email, password from users"
+	query := "SELECT id, email, password, pin, fullname, phone from users"
 	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
-		return []Users{}, err
+		return []User{}, err
 	}
 
-	users, err := pgx.CollectRows[Users](rows, pgx.RowToStructByName)
+	users, err := pgx.CollectRows[User](rows, pgx.RowToStructByName)
 	if err != nil {
-		return []Users{}, err
+		return []User{}, err
 	}
 	return users, err
 }
@@ -89,6 +88,7 @@ func FindUserByEmail(email string) (User, error) {
 	}
 	defer conn.Close()
 
+	fmt.Println("model:", email)
 	query := `SELECT id, email, password, pin, fullname, phone FROM users WHERE email = $1`
 	rows, err := conn.Query(context.Background(), query, email)
 	if err != nil {
@@ -120,17 +120,120 @@ func UpdateProfile(newData User) error {
 		return fmt.Errorf("input data must not be empty")
 	}
 
-	if newData.Email != oldData.Email {
+	if newData.Email != "" && newData.Email != oldData.Email {
 		oldData.Email = newData.Email
 	}
-	if newData.Fullname != oldData.Fullname {
+	if newData.Fullname != "" && newData.Fullname != oldData.Fullname {
 		oldData.Fullname = newData.Fullname
 	}
-	if newData.Phone != oldData.Phone {
+	if newData.Phone != "" && newData.Phone != oldData.Phone {
 		oldData.Phone = newData.Phone
 	}
 
 	_, err = conn.Exec(context.Background(), `UPDATE users set email =  $1, fullname = $2, phone = $3 where id=$4`, oldData.Email, oldData.Fullname, oldData.Phone, oldData.ID)
 
 	return err
+}
+
+func UpdatePassword(newData Password) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	oldData, err := FindUserByEmail(newData.Email)
+	if err != nil {
+		return err
+	}
+
+	if newData.ExistPassword == "" && newData.NewPassword == "" && newData.ConfirmPassword == "" {
+		return fmt.Errorf("input password cannot be empty")
+	}
+
+	if newData.NewPassword != newData.ConfirmPassword {
+		return fmt.Errorf("new password and confirm password do not match")
+	}
+
+	if newData.NewPassword != oldData.Password {
+		oldData.Password = newData.NewPassword
+	}
+
+	_, err = conn.Exec(context.Background(), `UPDATE users set password = $1 where id=$4`, oldData.Password, oldData.ID)
+
+	return err
+}
+
+func UpdatePin(newData Pin) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	oldData, err := FindUserByEmail(newData.Email)
+	if err != nil {
+		return err
+	}
+
+	if newData.Pin == "" {
+		return fmt.Errorf("input pin cannot be empty")
+	}
+
+	if newData.Pin != oldData.Pin {
+		oldData.Pin = newData.Pin
+	}
+
+	_, err = conn.Exec(context.Background(), `UPDATE users set password =  $1 where id=$4`, oldData.Password, oldData.ID)
+
+	return err
+}
+
+func SearchUserByName(name string) ([]Users, error) {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	search := "%" + name + "%"
+	query := `SELECT id, email, fullname, phone, balance, profile_iamge FROM users WHERE fullname ILIKE $1`
+	rows, err := conn.Query(context.Background(), query, search)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users, err := pgx.CollectRows[Users](rows, pgx.RowToStructByName)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(users) == 0 {
+		return []Users{}, nil
+	}
+
+	return users, nil
+}
+
+func FindHistoryTransaction(email string) (User, error) {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return User{}, err
+	}
+	defer conn.Close()
+
+	query := `SELECT id, transaction_type, amount, description, created_at, sender_id, receiver_id, payment_method_id FROM transaction WHERE sender_id = $1`
+	rows, err := conn.Query(context.Background(), query, email)
+	if err != nil {
+		return User{}, err
+	}
+	defer rows.Close()
+
+	user, err := pgx.CollectOneRow[User](rows, pgx.RowToStructByName)
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, err
 }

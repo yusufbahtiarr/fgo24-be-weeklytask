@@ -4,17 +4,19 @@ import (
 	"fgo24-be-ewallet/models"
 	"fmt"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 )
 
 func AuthLogin(ctx *gin.Context) {
-	//inisiasi
-	// godotenv.Load()
-	// secretKey := os.Getenv("APP_SECRET")
+	godotenv.Load()
+	secretKey := os.Getenv("APP_SECRET")
 	loginUser := models.LoginUser{}
 
-	//cek data request
 	if err := ctx.ShouldBind(&loginUser); err != nil {
 		ctx.JSON(http.StatusBadRequest, models.Response{
 			Success: false,
@@ -23,48 +25,45 @@ func AuthLogin(ctx *gin.Context) {
 		return
 	}
 
-	//cek user by email
+	fmt.Println("controller:", loginUser.Email)
 	user, err := models.FindUserByEmail(loginUser.Email)
 	if err != nil {
+		fmt.Println(user)
 		ctx.JSON(http.StatusNotFound, models.Response{
 			Success: false,
 			Message: "User with specified email not found",
 		})
 		return
 	}
-
-	//cek validasi password
-	if user == (models.User{}) || loginUser.Password == user.Password {
-		ctx.JSON(http.StatusUnauthorized, models.Response{
+	fmt.Println("loginUser :", loginUser.Password)
+	fmt.Println("User :", user.Password)
+	if user == (models.User{}) || loginUser.Password != user.Password {
+		ctx.JSON(http.StatusNotFound, models.Response{
 			Success: false,
 			Message: "Invalid email or password",
 		})
 		return
 	}
 
-	//generate token
-	// generatedToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-	// 	"userId": user.ID,
-	// 	"iat":    time.Now().Unix(),
-	// })
+	generatedToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userId": user.ID,
+		"iat":    time.Now().Unix(),
+	})
 
-	// token, _ := generatedToken.SignedString([]byte(secretKey))
+	token, _ := generatedToken.SignedString([]byte(secretKey))
 
-	//response success
 	ctx.JSON(http.StatusOK, models.Response{
 		Success: true,
 		Message: "Success Login.",
-		// Results: map[string]string{
-		// 	"token": token,
-		// },
+		Results: map[string]string{
+			"token": token,
+		},
 	})
 }
 
 func AuthRegister(ctx *gin.Context) {
-	//inisiasi
 	user := models.User{}
 
-	//cek data
 	err := ctx.ShouldBind(&user)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, models.Response{
@@ -74,7 +73,6 @@ func AuthRegister(ctx *gin.Context) {
 		return
 	}
 
-	//proses register user
 	fmt.Println("ctr auth:", user)
 	err = models.RegisterUser(user)
 	if err != nil {
@@ -85,7 +83,6 @@ func AuthRegister(ctx *gin.Context) {
 		return
 	}
 
-	//response success
 	ctx.JSON(http.StatusCreated, models.Response{
 		Success: true,
 		Message: "Success created user.",

@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"fgo24-be-ewallet/utils"
-	"fmt"
 
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -15,7 +14,6 @@ func RegisterUser(user User) error {
 	}
 	defer conn.Close()
 
-	fmt.Println("mdl user", user)
 	_, err = conn.Exec(
 		context.Background(),
 		`INSERT INTO users (email, password, pin) VALUES ($1, $2, $3)`,

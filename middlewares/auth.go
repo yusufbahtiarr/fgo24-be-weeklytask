@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"fgo24-be-ewallet/models"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -17,6 +18,7 @@ func VerifyToken() gin.HandlerFunc {
 		secretKey := os.Getenv("APP_SECRET")
 		token := strings.Split(ctx.GetHeader("Authorization"), "Bearer")
 
+		fmt.Println("token: ", token)
 		if len(token) < 2 {
 			ctx.JSON(http.StatusUnauthorized, models.Response{
 				Success: false,
@@ -25,11 +27,12 @@ func VerifyToken() gin.HandlerFunc {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-
-		rawToken, err := jwt.Parse(token[1], func(t *jwt.Token) (interface{}, error) {
+		rawTokenString := strings.TrimSpace(token[1])
+		rawToken, err := jwt.Parse(rawTokenString, func(t *jwt.Token) (interface{}, error) {
 			return []byte(secretKey), nil
 		})
 
+		fmt.Println("raw token: ", rawToken)
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, models.Response{
 				Success: false,
