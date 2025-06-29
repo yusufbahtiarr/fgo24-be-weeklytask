@@ -333,3 +333,30 @@ func CreateTransactionTransfer(transaction TransactionTransfer, userId int) erro
 
 	return nil
 }
+
+func CreateTransactionTopup(transaction TransactionTopup, userId int) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	topup := "topup"
+
+	_, err = conn.Exec(
+		context.Background(),
+		`INSERT INTO transactions (transaction_type, amount, receiver_id, payment_method_id) VALUES ($1, $2, $3, $4)`,
+		topup,
+		transaction.Amount,
+		userId,
+		transaction.PaymentMethodId,
+	)
+
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
+			return err
+		}
+		return err
+	}
+
+	return nil
+}
