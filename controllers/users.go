@@ -101,7 +101,11 @@ func GetAllHistory(ctx *gin.Context) {
 }
 
 func UpdateProfile(ctx *gin.Context) {
-	newData := models.User{}
+	userIdx, _ := ctx.Get("userId")
+	userId := int(userIdx.(float64))
+	newData := models.UpdateProfileRq{}
+
+	// println("ctr newData: ", newData)
 	err := ctx.ShouldBind(&newData)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, models.Response{
@@ -111,7 +115,7 @@ func UpdateProfile(ctx *gin.Context) {
 		return
 	}
 
-	err = models.UpdateProfile(newData)
+	err = models.UpdateProfile(newData, userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,

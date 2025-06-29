@@ -18,21 +18,28 @@ type Response struct {
 	Results  any    `json:"results,omitempty"`
 }
 type User struct {
-	ID       int    `db:"id"  form:"id"`
-	Email    string `db:"email" form:"email" json:"email" binding:"required,email"`
-	Password string `db:"password" form:"password" json:"password"`
-	Pin      string `db:"pin" form:"pin"`
-	Fullname string `db:"fullname" form:"fullname"`
-	Phone    string `db:"phone" form:"phone"`
+	ID           int         `db:"id"  form:"id"`
+	Email        string      `db:"email" form:"email" json:"email" binding:"required,email"`
+	Password     string      `db:"password" form:"password" json:"password"`
+	Pin          string      `db:"pin" form:"pin"`
+	Fullname     string      `db:"fullname" form:"fullname"`
+	Phone        string      `db:"phone" form:"phone"`
+	ProfileImage pgtype.Text `db:"profile_image" form:"profile_image"`
+}
+
+type UpdateProfileRq struct {
+	Email        string `form:"email" json:"email" binding:"required,email"`
+	Fullname     string `form:"fullname" json:"fullname"`
+	Phone        string `form:"phone" json:"phone"`
+	ProfileImage string `form:"profile_image" json:"profile_image"`
 }
 
 type LoginUser struct {
-	Email    string `db:"email" form:"email"`
-	Password string `db:"password" form:"password"`
+	Email    string `form:"email"`
+	Password string `form:"password"`
 }
 
 type Register struct {
-	ID              int    `db:"id"  form:"id"`
 	Email           string `form:"email" binding:"required,email"`
 	Password        string `form:"password" binding:"required,password"`
 	ConfirmPassword string `form:"confirm_password" binding:"required,confirm_password"`
@@ -46,7 +53,6 @@ type Password struct {
 }
 
 type Pin struct {
-	ID    int    `db:"id"  form:"id"`
 	Email string `form:"email" binding:"required,email"`
 	Pin   string `form:"pin"`
 }
@@ -93,7 +99,7 @@ func FindUserByEmail(email string) (User, error) {
 	}
 	defer conn.Close()
 
-	query := `SELECT id, email, password, pin, fullname, phone FROM users WHERE email = $1`
+	query := `SELECT id, email, password, pin, fullname, phone, profile_image FROM users WHERE email = $1`
 	rows, err := conn.Query(context.Background(), query, email)
 	if err != nil {
 		return User{}, err
@@ -115,7 +121,8 @@ func FindUserByID(id int) (User, error) {
 	}
 	defer conn.Close()
 
-	query := `SELECT id, email, password, pin, fullname, phone FROM users WHERE id = $1`
+	fmt.Println("model: ", id)
+	query := `SELECT id, email, password, pin, fullname, phone, profile_image FROM users WHERE id = $1`
 	rows, err := conn.Query(context.Background(), query, id)
 	if err != nil {
 		return User{}, err
@@ -130,17 +137,19 @@ func FindUserByID(id int) (User, error) {
 	return user, err
 }
 
-func UpdateProfile(newData User) error {
+func UpdateProfile(newData UpdateProfileRq, userId int) error {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	oldData, err := FindUserByEmail(newData.Email)
+	oldData, err := FindUserByID(userId)
 	if err != nil {
 		return err
 	}
+	fmt.Println("newData", newData)
+	fmt.Println("oldData", oldData)
 
 	if newData.Email == "" && newData.Fullname == "" && newData.Phone == "" {
 		return fmt.Errorf("input data must not be empty")
