@@ -4,6 +4,7 @@ import (
 	"fgo24-be-ewallet/models"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -58,6 +59,44 @@ func GetUserByEmail(ctx *gin.Context) {
 		Success: true,
 		Message: "User by Email",
 		Results: user2,
+	})
+}
+
+func GetAllHistory(ctx *gin.Context) {
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "5"))
+	userIdx, _ := ctx.Get("userId")
+	userId := int(userIdx.(float64))
+
+	history, err := models.FindHistoryTransaction(userId, page, limit)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.Response{
+			Success: false,
+			Message: "Internal server error",
+			Errors:  err.Error(),
+		})
+		return
+	}
+
+	totalData, err := models.GetTotalTransactionCount(userId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.Response{
+			Success: false,
+			Message: "Internal server error",
+			Errors:  err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, models.Response{
+		Success: true,
+		Message: "List History",
+		PageInfo: map[string]int{
+			"page":      page,
+			"limit":     limit,
+			"totalData": totalData,
+		},
+		Results: history,
 	})
 }
 

@@ -4,15 +4,18 @@ import (
 	"context"
 	"fgo24-be-ewallet/utils"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Response struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-	Errors  any    `json:"errors,omitempty"`
-	Results any    `json:"results,omitempty"`
+	Success  bool   `json:"success"`
+	Message  string `json:"message"`
+	Errors   any    `json:"errors,omitempty"`
+	PageInfo any    `json:"pageinfo,omitempty"`
+	Results  any    `json:"results,omitempty"`
 }
 type User struct {
 	ID       int    `db:"id"  form:"id"`
@@ -49,34 +52,36 @@ type Pin struct {
 }
 
 type Transaction struct {
-	ID              int    `db:"id"  form:"id"`
-	TransactionType string `form:"transaction_type" binding:"required,transaction_type"`
-	Amount          int    `form:"amount" binding:"required,amount"`
-	Description     string `form:"description" binding:"required,description"`
-	SenderId        string `form:"sender_id" binding:"required,sender_id"`
-	ReceiverId      string `form:"receiver_id" binding:"required,receiver_id"`
-	PaymentMethodId string `form:"payment_method_id" binding:"required,payment_method_id"`
+	ID              int         `db:"id" form:"id" json:"id"`
+	TransactionType string      `db:"transaction_type" form:"transaction_type" json:"transaction_type" binding:"required,transaction_type"`
+	Amount          int         `db:"amount" form:"amount" json:"amount" binding:"required,amount"`
+	Description     pgtype.Text `db:"description" form:"description" json:"description" binding:"required,description"`
+	SenderId        pgtype.Int4 `db:"sender_id" form:"sender_id" json:"sender_id" binding:"required,sender_id"`
+	ReceiverId      pgtype.Int4 `db:"receiver_id" form:"receiver_id" json:"receiver_id" binding:"required,receiver_id"`
+	PaymentMethodId pgtype.Int4 `db:"payment_method_id" form:"payment_method_id" json:"payment_method_id" binding:"required,payment_method_id"`
+	CreatedAt       time.Time   `db:"created_at" form:"created_at" json:"created_at" binding:"required,created_at"`
 }
 
 type Users []User
+type Transactions []Transaction
 
-func FindAllUsers() ([]User, error) {
+func FindAllUsers() (Users, error) {
 	conn, err := utils.DBConnect()
 
 	if err != nil {
-		return []User{}, err
+		return Users{}, err
 	}
 	defer conn.Close()
 
 	query := "SELECT id, email, password, pin, fullname, phone from users"
 	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
-		return []User{}, err
+		return Users{}, err
 	}
 
 	users, err := pgx.CollectRows[User](rows, pgx.RowToStructByName)
 	if err != nil {
-		return []User{}, err
+		return Users{}, err
 	}
 	return users, err
 }
@@ -88,9 +93,30 @@ func FindUserByEmail(email string) (User, error) {
 	}
 	defer conn.Close()
 
-	fmt.Println("model:", email)
 	query := `SELECT id, email, password, pin, fullname, phone FROM users WHERE email = $1`
 	rows, err := conn.Query(context.Background(), query, email)
+	if err != nil {
+		return User{}, err
+	}
+	defer rows.Close()
+
+	user, err := pgx.CollectOneRow[User](rows, pgx.RowToStructByName)
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, err
+}
+
+func FindUserByID(id int) (User, error) {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return User{}, err
+	}
+	defer conn.Close()
+
+	query := `SELECT id, email, password, pin, fullname, phone FROM users WHERE id = $1`
+	rows, err := conn.Query(context.Background(), query, id)
 	if err != nil {
 		return User{}, err
 	}
@@ -216,24 +242,46 @@ func SearchUserByName(name string) ([]Users, error) {
 	return users, nil
 }
 
-func FindHistoryTransaction(email string) (User, error) {
+func FindHistoryTransaction(userId, page, limit int) (Transactions, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {
-		return User{}, err
+		return Transactions{}, err
 	}
 	defer conn.Close()
 
-	query := `SELECT id, transaction_type, amount, description, created_at, sender_id, receiver_id, payment_method_id FROM transaction WHERE sender_id = $1`
-	rows, err := conn.Query(context.Background(), query, email)
+	offset := (page - 1) * limit
+	if offset < 0 {
+		offset = 0
+	}
+	if limit <= 0 {
+		limit = 5
+	}
+	query := `SELECT id, transaction_type, amount, description, created_at, sender_id, receiver_id, payment_method_id FROM transactions WHERE sender_id = $3 or receiver_id = $3 ORDER BY created_at DESC LIMIT $1 OFFSET $2 `
+	rows, err := conn.Query(context.Background(), query, limit, offset, userId)
 	if err != nil {
-		return User{}, err
+		return Transactions{}, err
 	}
 	defer rows.Close()
 
-	user, err := pgx.CollectOneRow[User](rows, pgx.RowToStructByName)
+	transaction, err := pgx.CollectRows[Transaction](rows, pgx.RowToStructByName)
 	if err != nil {
-		return User{}, err
+		return Transactions{}, err
 	}
 
-	return user, err
+	return transaction, err
+}
+
+func GetTotalTransactionCount(userId int) (int, error) {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return 0, err
+	}
+	defer conn.Close()
+
+	var count int
+	err = conn.QueryRow(context.Background(), "SELECT COUNT(*) FROM transactions WHERE sender_id = $1 or receiver_id = $1;", userId).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get total transaction count: %w", err)
+	}
+	return count, nil
 }
