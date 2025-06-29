@@ -13,7 +13,7 @@ func userRouter(r *gin.RouterGroup) {
 	r.GET("/", controllers.SearchUserByName)
 	r.GET("/history", controllers.GetAllHistory)
 	r.POST("/email", controllers.GetUserByEmail)
-	r.POST("/transfer", controllers.GetUserByEmail)
+	r.POST("/transfer", controllers.CreateTransactionTransfer)
 	r.POST("/topup", controllers.GetUserByEmail)
 	r.PATCH("/profile", controllers.UpdateProfile)
 	r.PATCH("/password", controllers.UpdatePassword)

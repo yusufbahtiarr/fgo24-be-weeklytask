@@ -228,3 +228,32 @@ func SearchUserByName(ctx *gin.Context) {
 		Results: users,
 	})
 }
+
+func CreateTransactionTransfer(ctx *gin.Context) {
+	userIdx, _ := ctx.Get("userId")
+	userId := int(userIdx.(float64))
+	transaction := models.TransactionTransfer{}
+
+	err := ctx.ShouldBind(&transaction)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, models.Response{
+			Success: false,
+			Message: "Invalid Input",
+		})
+		return
+	}
+
+	err = models.CreateTransactionTransfer(transaction, userId)
+	if err != nil {
+		ctx.JSON(http.StatusOK, models.Response{
+			Success: false,
+			Message: "Failed to create transaction transfer.",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, models.Response{
+		Success: true,
+		Message: "Success created transaction transfer.",
+	})
+}

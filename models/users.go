@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -66,6 +67,17 @@ type Transaction struct {
 	CreatedAt       time.Time   `db:"created_at" form:"created_at" json:"created_at" binding:"required,created_at"`
 }
 
+type TransactionTransfer struct {
+	Amount          int    `form:"amount" json:"amount" binding:"required"`
+	Description     string `form:"description"`
+	ReceiverId      int    `form:"receiver_id" binding:"required"`
+	PaymentMethodId int    `form:"payment_method_id" binding:"required"`
+}
+type TransactionTopup struct {
+	Amount          int `form:"amount" json:"amount" binding:"required"`
+	PaymentMethodId int `form:"payment_method_id" binding:"required"`
+}
+
 type Users []User
 type Transactions []Transaction
 
@@ -119,7 +131,7 @@ func FindUserByID(id int) (User, error) {
 	}
 	defer conn.Close()
 
-	fmt.Println("model: ", id)
+	// fmt.Println("model: ", id)
 	query := `SELECT id, email, password, pin, fullname, phone, profile_image FROM users WHERE id = $1`
 	rows, err := conn.Query(context.Background(), query, id)
 	if err != nil {
@@ -291,4 +303,33 @@ func GetTotalTransactionCount(userId int) (int, error) {
 		return 0, fmt.Errorf("failed to get total transaction count: %w", err)
 	}
 	return count, nil
+}
+
+func CreateTransactionTransfer(transaction TransactionTransfer, userId int) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	transfer := "transfer"
+
+	_, err = conn.Exec(
+		context.Background(),
+		`INSERT INTO transactions (transaction_type, amount, description, sender_id, receiver_id, payment_method_id) VALUES ($1, $2, $3, $4, $5, $6)`,
+		transfer,
+		transaction.Amount,
+		transaction.Description,
+		userId,
+		transaction.ReceiverId,
+		transaction.PaymentMethodId,
+	)
+
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
+			return err
+		}
+		return err
+	}
+
+	return nil
 }
