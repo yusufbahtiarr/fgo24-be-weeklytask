@@ -132,8 +132,13 @@ func UpdateProfile(ctx *gin.Context) {
 }
 
 func UpdatePassword(ctx *gin.Context) {
+	userIdx, _ := ctx.Get("userId")
+	userId := int(userIdx.(float64))
 	newData := models.Password{}
+
 	err := ctx.ShouldBind(&newData)
+	fmt.Println("id: ", userId)
+	fmt.Println("ctrl: ", newData)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, models.Response{
 			Success: false,
@@ -142,7 +147,7 @@ func UpdatePassword(ctx *gin.Context) {
 		return
 	}
 
-	err = models.UpdatePassword(newData)
+	err = models.UpdatePassword(newData, userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,

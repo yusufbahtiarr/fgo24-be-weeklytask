@@ -46,10 +46,9 @@ type Register struct {
 }
 
 type Password struct {
-	Email           string `form:"email" binding:"required,email"`
-	ExistPassword   string `form:"exist_password" binding:"required,exist_password"`
-	NewPassword     string `form:"new_password" binding:"required,new_password"`
-	ConfirmPassword string `form:"confirm_password" binding:"required,confirm_password"`
+	ExistPassword   string `form:"exist_password" binding:"required"`
+	NewPassword     string `form:"new_password" binding:"required,min=8"`
+	ConfirmPassword string `form:"confirm_password" binding:"required,eqfield=NewPassword"`
 }
 
 type Pin struct {
@@ -148,8 +147,6 @@ func UpdateProfile(newData UpdateProfileRq, userId int) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("newData", newData)
-	fmt.Println("oldData", oldData)
 
 	if newData.Email == "" && newData.Fullname == "" && newData.Phone == "" {
 		return fmt.Errorf("input data must not be empty")
@@ -170,31 +167,33 @@ func UpdateProfile(newData UpdateProfileRq, userId int) error {
 	return err
 }
 
-func UpdatePassword(newData Password) error {
+func UpdatePassword(newData Password, userId int) error {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	oldData, err := FindUserByEmail(newData.Email)
+	oldData, err := FindUserByID(userId)
 	if err != nil {
 		return err
 	}
+	fmt.Println("oldData:", oldData)
+	fmt.Println("newData:", newData)
 
 	if newData.ExistPassword == "" && newData.NewPassword == "" && newData.ConfirmPassword == "" {
 		return fmt.Errorf("input password cannot be empty")
+	}
+
+	if oldData.Password != newData.ExistPassword {
+		return fmt.Errorf("existing password is incorrect")
 	}
 
 	if newData.NewPassword != newData.ConfirmPassword {
 		return fmt.Errorf("new password and confirm password do not match")
 	}
 
-	if newData.NewPassword != oldData.Password {
-		oldData.Password = newData.NewPassword
-	}
-
-	_, err = conn.Exec(context.Background(), `UPDATE users set password = $1 where id=$4`, oldData.Password, oldData.ID)
+	_, err = conn.Exec(context.Background(), `UPDATE users set password = $1 where id=$2`, newData.NewPassword, userId)
 
 	return err
 }
