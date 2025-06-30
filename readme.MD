@@ -1,6 +1,42 @@
-# ERD E-Wallet
+# Project Backend RESTful API Go - E-Wallet
 
-This project, presents an Entity-Relationship Diagram (ERD) for an E-Wallet system using the Mermaid diagramming tool.
+This backend e-wallet system was developed for Koda Academy's Full-Stack Bootcamp, enhancing a previous iteration with robust features including JWT authentication, transaction processing, and account management
+
+## Prerequisites
+
+Make sure you already install Go to run this project
+
+## How to Run this Project
+
+1. Create a new empty directory for the project and navigate into it
+2. Clone this project into the empty current directory:
+
+```
+git clone https://github.com/mdavindarinaldy/fgo24-be-weeklytask.git .
+```
+
+3. Install dependencies
+
+```
+go mod tidy
+```
+
+4. Run the project
+
+```
+go run main.go
+```
+
+## Database Schema
+
+### Tables
+
+- **users**: Stores user information (id, name, email, phone number, password, pin, fullname, phone, picture_image)
+- **contact**: Manages user connections by storing friend relationships between accounts.
+- **transactions**: Records financial transactions, including top-ups and transfers, with references to sender and receiver users.
+- **payment_method**: Catalogs all available payment options along with their respective transfer fees.
+
+### Entity Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
@@ -44,3 +80,40 @@ erDiagram
     }
 
 ```
+
+## API Documentation
+
+1. Authentication
+
+```bash
+# register user
+POST /auth/register
+# login user
+POST /auth/login
+```
+
+2. Users
+
+```bash
+# update profile
+PUT /users/profile
+# find people
+GET /users?search=
+# detail user
+GET /users/9
+# create topup
+POST /users/topup
+# create transfer
+POST /users/transfer
+# list history transaction
+GET /users/history
+```
+
+## Dependencies
+
+This project use:
+
+1. gin-gonic from github.com/gin-gonic/gin : for handling HTTP request/response data (gin.Context), for defining middleware and route handlers (gin.HandlerFunc), for organizing routes into groups (gin.RouterGroup) and for managing HTTP routing and server configuration (gin.Engine)
+2. jwt v5 from github.com/golang-jwt/jwt/v5 : for creating, parsing and validating JSON Web Tokens (JWT) for authentication and authorization
+3. pgx from github.com/jackc/pgx/v5 : for direct database interactions (PostgreSQL)
+4. godotenv from github.com/joho/godotenv : for loading environment variables from a .env file into the application
