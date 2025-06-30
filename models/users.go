@@ -67,10 +67,9 @@ type Transaction struct {
 }
 
 type TransactionTransfer struct {
-	Amount          int    `form:"amount" json:"amount" binding:"required"`
-	Description     string `form:"description"`
-	ReceiverId      int    `form:"receiver_id" binding:"required"`
-	PaymentMethodId int    `form:"payment_method_id" binding:"required"`
+	Amount      int    `form:"amount" json:"amount" binding:"required"`
+	Description string `form:"description"`
+	ReceiverId  int    `form:"receiver_id" binding:"required"`
 }
 type TransactionTopup struct {
 	Amount          int `form:"amount" json:"amount" binding:"required"`
@@ -233,7 +232,7 @@ func UpdatePin(newData Pin, userId int) error {
 	return err
 }
 
-func SearchUserByName(name string) ([]Users, error) {
+func FindUserByName(name string) ([]Users, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return nil, err
@@ -241,7 +240,7 @@ func SearchUserByName(name string) ([]Users, error) {
 	defer conn.Close()
 
 	search := "%" + name + "%"
-	query := `SELECT id, email, fullname, phone, balance, profile_iamge FROM users WHERE fullname ILIKE $1`
+	query := `SELECT id, email, fullname, phone, balance, profile_image FROM users WHERE fullname ILIKE $1`
 	rows, err := conn.Query(context.Background(), query, search)
 	if err != nil {
 		return nil, err
@@ -314,13 +313,12 @@ func CreateTransactionTransfer(transaction TransactionTransfer, userId int) erro
 
 	_, err = conn.Exec(
 		context.Background(),
-		`INSERT INTO transactions (transaction_type, amount, description, sender_id, receiver_id, payment_method_id) VALUES ($1, $2, $3, $4, $5, $6)`,
+		`INSERT INTO transactions (transaction_type, amount, description, sender_id, receiver_id) VALUES ($1, $2, $3, $4, $5)`,
 		transfer,
 		transaction.Amount,
 		transaction.Description,
 		userId,
 		transaction.ReceiverId,
-		transaction.PaymentMethodId,
 	)
 
 	if err != nil {
