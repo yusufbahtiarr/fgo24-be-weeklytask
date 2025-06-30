@@ -7,7 +7,6 @@ erDiagram
     direction LR
     users ||--o{ contacts : has
     users ||--o{ transactions : make
-    users ||--o{ sessions : has
     contacts }o--o| transactions : receives
     transactions ||--o{ payment_methods : uses
 
@@ -43,15 +42,5 @@ erDiagram
         int friend_id FK
         timestamp created_at
     }
-
-    sessions {
-        string id PK
-        token string
-        is_active bool
-        timestamps created_at
-        timesstamp expired_at
-        int user_id FK
-    }
-
 
 ```

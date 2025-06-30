@@ -39,11 +39,11 @@ CREATE TABLE transactions (
   payment_method_id INT REFERENCES payment_methods(id) 
 );
 
-CREATE TABLE sessions (
-  id SERIAL PRIMARY KEY,
-  token VARCHAR(255) UNIQUE NOT NULL,
-  is_active BOOLEAN DEFAULT TRUE, 
-  created_at TIMESTAMP(0) DEFAULT NOW(),
-  expired_at TIMESTAMP(0) DEFAULT NOW() + INTERVAL '1 day',
-  user_id INT REFERENCES users(id)
-);
+-- CREATE TABLE sessions (
+--   id SERIAL PRIMARY KEY,
+--   token VARCHAR(255) UNIQUE NOT NULL,
+--   is_active BOOLEAN DEFAULT TRUE, 
+--   created_at TIMESTAMP(0) DEFAULT NOW(),
+--   expired_at TIMESTAMP(0) DEFAULT NOW() + INTERVAL '1 day',
+--   user_id INT REFERENCES users(id)
+-- );

@@ -76,7 +76,7 @@ func AuthRegister(ctx *gin.Context) {
 	fmt.Println("ctr auth:", user)
 	err = models.RegisterUser(user)
 	if err != nil {
-		ctx.JSON(http.StatusOK, models.Response{
+		ctx.JSON(http.StatusBadRequest, models.Response{
 			Success: false,
 			Message: "Failed to create user.",
 		})

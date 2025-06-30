@@ -8,7 +8,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Response struct {
@@ -19,13 +18,13 @@ type Response struct {
 	Results  any    `json:"results,omitempty"`
 }
 type User struct {
-	ID           int         `db:"id"  form:"id"`
-	Email        string      `db:"email" form:"email" json:"email" binding:"required,email"`
-	Password     string      `db:"password" form:"password" json:"password"`
-	Pin          string      `db:"pin" form:"pin"`
-	Fullname     string      `db:"fullname" form:"fullname"`
-	Phone        string      `db:"phone" form:"phone"`
-	ProfileImage pgtype.Text `db:"profile_image" form:"profile_image"`
+	ID           int     `db:"id"  form:"id"`
+	Email        string  `db:"email" form:"email" json:"email" binding:"required,email"`
+	Password     string  `db:"password" form:"password" json:"password"`
+	Pin          string  `db:"pin" form:"pin"`
+	Fullname     *string `db:"fullname" form:"fullname"`
+	Phone        *string `db:"phone" form:"phone"`
+	ProfileImage *string `db:"profile_image" form:"profile_image"`
 }
 
 type UpdateProfileRq struct {
@@ -57,14 +56,14 @@ type Pin struct {
 }
 
 type Transaction struct {
-	ID              int         `db:"id" form:"id" json:"id"`
-	TransactionType string      `db:"transaction_type" form:"transaction_type" json:"transaction_type" binding:"required,transaction_type"`
-	Amount          int         `db:"amount" form:"amount" json:"amount" binding:"required,amount"`
-	Description     pgtype.Text `db:"description" form:"description" json:"description" binding:"required,description"`
-	SenderId        pgtype.Int4 `db:"sender_id" form:"sender_id" json:"sender_id" binding:"required,sender_id"`
-	ReceiverId      pgtype.Int4 `db:"receiver_id" form:"receiver_id" json:"receiver_id" binding:"required,receiver_id"`
-	PaymentMethodId pgtype.Int4 `db:"payment_method_id" form:"payment_method_id" json:"payment_method_id" binding:"required,payment_method_id"`
-	CreatedAt       time.Time   `db:"created_at" form:"created_at" json:"created_at" binding:"required,created_at"`
+	ID              int       `db:"id" form:"id" json:"id"`
+	TransactionType string    `db:"transaction_type" form:"transaction_type" json:"transaction_type" binding:"required,transaction_type"`
+	Amount          int       `db:"amount" form:"amount" json:"amount" binding:"required,amount"`
+	Description     *string   `db:"description" form:"description" json:"description" binding:"required,description"`
+	SenderId        *int      `db:"sender_id" form:"sender_id" json:"sender_id" binding:"required,sender_id"`
+	ReceiverId      *int      `db:"receiver_id" form:"receiver_id" json:"receiver_id" binding:"required,receiver_id"`
+	PaymentMethodId *int      `db:"payment_method_id" form:"payment_method_id" json:"payment_method_id" binding:"required,payment_method_id"`
+	CreatedAt       time.Time `db:"created_at" form:"created_at" json:"created_at" binding:"required,created_at"`
 }
 
 type TransactionTransfer struct {
@@ -89,7 +88,7 @@ func FindAllUsers() (Users, error) {
 	}
 	defer conn.Close()
 
-	query := "SELECT id, email, password, pin, fullname, phone from users"
+	query := "SELECT id, email, password, pin, fullname, phone, profile_image from users"
 	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		return Users{}, err
@@ -166,11 +165,11 @@ func UpdateProfile(newData UpdateProfileRq, userId int) error {
 	if newData.Email != "" && newData.Email != oldData.Email {
 		oldData.Email = newData.Email
 	}
-	if newData.Fullname != "" && newData.Fullname != oldData.Fullname {
-		oldData.Fullname = newData.Fullname
+	if newData.Fullname != "" && newData.Fullname != *oldData.Fullname {
+		oldData.Fullname = &newData.Fullname
 	}
-	if newData.Phone != "" && newData.Phone != oldData.Phone {
-		oldData.Phone = newData.Phone
+	if newData.Phone != "" && newData.Phone != *oldData.Phone {
+		oldData.Phone = &newData.Phone
 	}
 
 	_, err = conn.Exec(context.Background(), `UPDATE users set email =  $1, fullname = $2, phone = $3 where id=$4`, oldData.Email, oldData.Fullname, oldData.Phone, oldData.ID)

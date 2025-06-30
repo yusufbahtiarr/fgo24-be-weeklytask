@@ -245,7 +245,7 @@ func CreateTransactionTransfer(ctx *gin.Context) {
 
 	err = models.CreateTransactionTransfer(transaction, userId)
 	if err != nil {
-		ctx.JSON(http.StatusOK, models.Response{
+		ctx.JSON(http.StatusBadRequest, models.Response{
 			Success: false,
 			Message: "Failed to create transaction transfer.",
 		})
@@ -274,7 +274,7 @@ func CreateTransactionTopup(ctx *gin.Context) {
 
 	err = models.CreateTransactionTopup(transaction, userId)
 	if err != nil {
-		ctx.JSON(http.StatusOK, models.Response{
+		ctx.JSON(http.StatusBadRequest, models.Response{
 			Success: false,
 			Message: "Failed to create transaction topup.",
 		})
