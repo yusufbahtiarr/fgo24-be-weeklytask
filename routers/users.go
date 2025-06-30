@@ -9,11 +9,11 @@ import (
 
 func userRouter(r *gin.RouterGroup) {
 	r.Use(middlewares.VerifyToken())
-	r.GET("", controllers.GetAllUser)
-	r.GET("/search", controllers.GetUserByName)
+	// r.GET("", controllers.GetAllUser)
+	r.GET("", controllers.GetUserByName)
 	r.GET("/history", controllers.GetAllHistory)
 	r.GET("/balance", controllers.GetBalance)
-	r.POST("/email", controllers.GetUserByEmail)
+	// r.POST("/email", controllers.GetUserByEmail)
 	r.PATCH("/profile", controllers.UpdateProfile)
 	r.PATCH("/password", controllers.UpdatePassword)
 	r.PATCH("/pin", controllers.UpdatePin)

@@ -23,6 +23,7 @@ type User struct {
 	Fullname     *string `db:"fullname" form:"fullname"`
 	Phone        *string `db:"phone" form:"phone"`
 	ProfileImage *string `db:"profile_image" form:"profile_image"`
+	Balance      int     `db:"balance" form:"balance"`
 }
 
 type UpdateProfileRq struct {
@@ -57,6 +58,12 @@ type Password struct {
 
 type Pin struct {
 	Pin string `form:"pin" binding:"required,len=6"`
+}
+
+type UserView struct {
+	FullName     string `json:"fullname"`
+	Phone        string `json:"phone"`
+	ProfileImage string `json:"profile_image"`
 }
 
 type Users []User
@@ -214,7 +221,7 @@ func UpdatePin(newData Pin, userId int) error {
 	return err
 }
 
-func FindUserByName(name string) ([]Users, error) {
+func FindUserByName(name string) (Users, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return nil, err
@@ -222,20 +229,20 @@ func FindUserByName(name string) ([]Users, error) {
 	defer conn.Close()
 
 	search := "%" + name + "%"
-	query := `SELECT id, email, fullname, phone, balance, profile_image FROM users WHERE fullname ILIKE $1`
+	query := `SELECT id, email, password, pin, fullname, phone, balance, profile_image FROM users WHERE fullname ILIKE $1`
 	rows, err := conn.Query(context.Background(), query, search)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	users, err := pgx.CollectRows[Users](rows, pgx.RowToStructByName)
+	users, err := pgx.CollectRows[User](rows, pgx.RowToStructByName)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(users) == 0 {
-		return []Users{}, nil
+		return Users{}, nil
 	}
 
 	return users, nil

@@ -101,14 +101,14 @@ erDiagram
 
 ### Users
 
-| Method | Endpoint          | Description                  | Auth Required |
-| ------ | ----------------- | ---------------------------- | ------------- |
-| GET    | `/users`          | Get All User                 | Yes           |
-| GET    | `/users/balance`  | Get Balance User             | Yes           |
-| GET    | `/users/history`  | Get History Transaction User | Yes           |
-| PATCH  | `/users/profile`  | Update Profile               | Yes           |
-| PATCH  | `/users/password` | Update Password              | Yes           |
-| PATCH  | `/users/pin`      | Update Pin                   | Yes           |
+| Method | Endpoint          | Description                   | Auth Required |
+| ------ | ----------------- | ----------------------------- | ------------- |
+| GET    | `/users?search`   | Get User by Name for Transfer | Yes           |
+| GET    | `/users/balance`  | Get Balance User              | Yes           |
+| GET    | `/users/history`  | Get History Transaction User  | Yes           |
+| PATCH  | `/users/profile`  | Update Profile                | Yes           |
+| PATCH  | `/users/password` | Update Password               | Yes           |
+| PATCH  | `/users/pin`      | Update Pin                    | Yes           |
 
 ### Transactions
 

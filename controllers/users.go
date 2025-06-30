@@ -193,8 +193,9 @@ func UpdatePin(ctx *gin.Context) {
 }
 
 func GetUserByName(ctx *gin.Context) {
-	searchQy := ctx.Param("search")
+	searchQy := ctx.Query("search")
 
+	fmt.Println("search:", searchQy)
 	if searchQy == "" {
 		ctx.JSON(http.StatusBadRequest, models.Response{
 			Success: false,
@@ -222,10 +223,27 @@ func GetUserByName(ctx *gin.Context) {
 		return
 	}
 
+	var userViews []models.UserView
+	for _, u := range users {
+		view := models.UserView{}
+
+		if u.Fullname != nil {
+			view.FullName = *u.Fullname
+		}
+		if u.Phone != nil {
+			view.Phone = *u.Phone
+		}
+		if u.ProfileImage != nil {
+			view.ProfileImage = *u.ProfileImage
+		}
+
+		userViews = append(userViews, view)
+	}
+
 	ctx.JSON(http.StatusOK, models.Response{
 		Success: true,
 		Message: "Users found by name",
-		Results: users,
+		Results: userViews,
 	})
 }
 
