@@ -6,7 +6,7 @@ CREATE TABLE users (
   email VARCHAR(100) NOT NULL UNIQUE,
   password VARCHAR(120) NOT NULL,
   pin CHAR(6) NOT NULL CHECK (pin ~ '^\d{6}$'),
-  balance BIGINT,
+  balance BIGINT DEFAULT 0,
   profile_image VARCHAR(255)
 );
 
@@ -26,7 +26,7 @@ CREATE TABLE payment_methods (
   payment_image VARCHAR(255)
 );
 
-CREATE TYPE type_trans AS ENUM ('topup', 'transfer', 'send');
+CREATE TYPE type_trans AS ENUM ('topup', 'transfer');
 
 CREATE TABLE transactions (
   id SERIAL PRIMARY KEY,
@@ -38,12 +38,3 @@ CREATE TABLE transactions (
   receiver_id INT REFERENCES users(id),
   payment_method_id INT REFERENCES payment_methods(id) 
 );
-
--- CREATE TABLE sessions (
---   id SERIAL PRIMARY KEY,
---   token VARCHAR(255) UNIQUE NOT NULL,
---   is_active BOOLEAN DEFAULT TRUE, 
---   created_at TIMESTAMP(0) DEFAULT NOW(),
---   expired_at TIMESTAMP(0) DEFAULT NOW() + INTERVAL '1 day',
---   user_id INT REFERENCES users(id)
--- );

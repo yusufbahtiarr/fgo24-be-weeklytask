@@ -229,60 +229,24 @@ func GetUserByName(ctx *gin.Context) {
 	})
 }
 
-func CreateTransactionTransfer(ctx *gin.Context) {
+func GetBalance(ctx *gin.Context) {
 	userIdx, _ := ctx.Get("userId")
+
 	userId := int(userIdx.(float64))
-	transaction := models.TransactionTransfer{}
 
-	err := ctx.ShouldBind(&transaction)
+	users, err := models.GetBalance(userId)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, models.Response{
+		ctx.JSON(http.StatusInternalServerError, models.Response{
 			Success: false,
-			Message: "Invalid Input",
+			Message: "Internal server error",
+			Errors:  err.Error(),
 		})
 		return
 	}
 
-	err = models.CreateTransactionTransfer(transaction, userId)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, models.Response{
-			Success: false,
-			Message: "Failed to create transaction transfer.",
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusCreated, models.Response{
+	ctx.JSON(http.StatusOK, models.Response{
 		Success: true,
-		Message: "Success created transaction transfer.",
-	})
-}
-
-func CreateTransactionTopup(ctx *gin.Context) {
-	userIdx, _ := ctx.Get("userId")
-	userId := int(userIdx.(float64))
-	transaction := models.TransactionTopup{}
-
-	err := ctx.ShouldBind(&transaction)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, models.Response{
-			Success: false,
-			Message: "Invalid Input",
-		})
-		return
-	}
-
-	err = models.CreateTransactionTopup(transaction, userId)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, models.Response{
-			Success: false,
-			Message: "Failed to create transaction topup.",
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusCreated, models.Response{
-		Success: true,
-		Message: "Success created transaction topup.",
+		Message: "Balance User",
+		Results: users,
 	})
 }
