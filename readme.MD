@@ -12,7 +12,7 @@ Make sure you already install Go to run this project
 2. Clone this project into the empty current directory:
 
 ```
-git clone https://github.com/mdavindarinaldy/fgo24-be-weeklytask.git .
+git clone https://github.com/yusufbahtiarr/fgo24-be-weeklytask.git .
 ```
 
 3. Install dependencies
@@ -21,7 +21,16 @@ git clone https://github.com/mdavindarinaldy/fgo24-be-weeklytask.git .
 go mod tidy
 ```
 
-4. Run the project
+4. Setup .env
+
+Create a .env file in the root folder with the following variables:
+
+```
+APP_SECRET=your_jwt_secret_key
+DATABASE_URL=postgres://username:password@localhost:5433/ewallet
+```
+
+5. Run the project
 
 ```
 go run main.go
@@ -83,31 +92,24 @@ erDiagram
 
 ## API Documentation
 
-1. Authentication
+### Auth
 
-```bash
-# register user
-POST /auth/register
-# login user
-POST /auth/login
-```
+| Method | Endpoint         | Description   |
+| ------ | ---------------- | ------------- |
+| POST   | `/auth/register` | Register User |
+| POST   | `/auth/login`    | Login User    |
 
-2. Users
+### Users
 
-```bash
-# update profile
-PUT /users/profile
-# find people
-GET /users?search=
-# detail user
-GET /users/9
-# create topup
-POST /users/topup
-# create transfer
-POST /users/transfer
-# list history transaction
-GET /users/history
-```
+| Method | Endpoint    | Description                  |
+| ------ | ----------- | ---------------------------- |
+| GET    | `/users`    | Get All User                 |
+| GET    | `/history`  | Get History Transaction User |
+| POST   | `/topup`    | Create Transaction Topup     |
+| POST   | `/transfer` | Create Transaction Transfer  |
+| PATCH  | `/profile`  | Update Profile               |
+| PATCH  | `/password` | Update Password              |
+| PATCH  | `/pin`      | Update Pin                   |
 
 ## Dependencies
 
