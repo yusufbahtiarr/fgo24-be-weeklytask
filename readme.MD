@@ -101,15 +101,20 @@ erDiagram
 
 ### Users
 
-| Method | Endpoint    | Description                  |
-| ------ | ----------- | ---------------------------- |
-| GET    | `/users`    | Get All User                 |
-| GET    | `/history`  | Get History Transaction User |
-| POST   | `/topup`    | Create Transaction Topup     |
-| POST   | `/transfer` | Create Transaction Transfer  |
-| PATCH  | `/profile`  | Update Profile               |
-| PATCH  | `/password` | Update Password              |
-| PATCH  | `/pin`      | Update Pin                   |
+| Method | Endpoint          | Description                  |
+| ------ | ----------------- | ---------------------------- |
+| GET    | `/users`          | Get All User                 |
+| GET    | `/users/history`  | Get History Transaction User |
+| PATCH  | `/users/profile`  | Update Profile               |
+| PATCH  | `/users/password` | Update Password              |
+| PATCH  | `/users/pin`      | Update Pin                   |
+
+### Transactions
+
+| Method | Endpoint                | Description                 |
+| ------ | ----------------------- | --------------------------- |
+| POST   | `/transaction/topup`    | Create Transaction Topup    |
+| POST   | `/transaction/transfer` | Create Transaction Transfer |
 
 ## Dependencies
 
