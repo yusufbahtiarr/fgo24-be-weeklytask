@@ -104,6 +104,7 @@ erDiagram
 | Method | Endpoint          | Description                  |
 | ------ | ----------------- | ---------------------------- |
 | GET    | `/users`          | Get All User                 |
+| GET    | `/users/balance`  | Get Balance User             |
 | GET    | `/users/history`  | Get History Transaction User |
 | PATCH  | `/users/profile`  | Update Profile               |
 | PATCH  | `/users/password` | Update Password              |
