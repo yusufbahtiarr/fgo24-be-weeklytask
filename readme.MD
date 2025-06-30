@@ -94,28 +94,28 @@ erDiagram
 
 ### Auth
 
-| Method | Endpoint         | Description   |
-| ------ | ---------------- | ------------- |
-| POST   | `/auth/register` | Register User |
-| POST   | `/auth/login`    | Login User    |
+| Method | Endpoint         | Description   | Auth Required |
+| ------ | ---------------- | ------------- | ------------- |
+| POST   | `/auth/register` | Register User | No            |
+| POST   | `/auth/login`    | Login User    | No            |
 
 ### Users
 
-| Method | Endpoint          | Description                  |
-| ------ | ----------------- | ---------------------------- |
-| GET    | `/users`          | Get All User                 |
-| GET    | `/users/balance`  | Get Balance User             |
-| GET    | `/users/history`  | Get History Transaction User |
-| PATCH  | `/users/profile`  | Update Profile               |
-| PATCH  | `/users/password` | Update Password              |
-| PATCH  | `/users/pin`      | Update Pin                   |
+| Method | Endpoint          | Description                  | Auth Required |
+| ------ | ----------------- | ---------------------------- | ------------- |
+| GET    | `/users`          | Get All User                 | Yes           |
+| GET    | `/users/balance`  | Get Balance User             | Yes           |
+| GET    | `/users/history`  | Get History Transaction User | Yes           |
+| PATCH  | `/users/profile`  | Update Profile               | Yes           |
+| PATCH  | `/users/password` | Update Password              | Yes           |
+| PATCH  | `/users/pin`      | Update Pin                   | Yes           |
 
 ### Transactions
 
-| Method | Endpoint                | Description                 |
-| ------ | ----------------------- | --------------------------- |
-| POST   | `/transaction/topup`    | Create Transaction Topup    |
-| POST   | `/transaction/transfer` | Create Transaction Transfer |
+| Method | Endpoint                | Description                 | Auth Required |
+| ------ | ----------------------- | --------------------------- | ------------- |
+| POST   | `/transaction/topup`    | Create Transaction Topup    | Yes           |
+| POST   | `/transaction/transfer` | Create Transaction Transfer | Yes           |
 
 ## Dependencies
 
