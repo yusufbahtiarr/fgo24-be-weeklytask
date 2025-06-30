@@ -130,21 +130,30 @@
 				{
 					"name": "USER BY FULLNAME",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NTEyMDkxOTMsInVzZXJJZCI6N30.jmKsFCAKokM6ujWYOPEHUq4bVEgfkjO2-koCJsLVrvg",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{url}}/users/?search=an",
+							"raw": "{{url}}/users?search=budi",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"users",
-								""
+								"users"
 							],
 							"query": [
 								{
 									"key": "search",
-									"value": "an"
+									"value": "budi"
 								}
 							]
 						}
@@ -180,87 +189,7 @@
 					"response": []
 				},
 				{
-					"name": "USER",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NTEwNDA5MjgsInVzZXJJZCI6N30.Kew2cqMK2xXq3PVjFY1bwD8BGa7F8oyWDJ59tVru6zA",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "username",
-									"value": "bahtiar",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "email",
-									"value": "yusuf@gmail.com",
-									"type": "text"
-								},
-								{
-									"key": "password",
-									"value": "222",
-									"type": "text",
-									"disabled": true
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/users/email",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"users",
-								"email"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "USER BY EMAIL",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "email",
-									"value": "andi.pratama@gmail.com",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/users/email",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"users",
-								"email"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "TOPUP",
+					"name": "BALANCE",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -272,84 +201,16 @@
 								}
 							]
 						},
-						"method": "POST",
+						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "amount",
-									"value": "200000",
-									"type": "text"
-								},
-								{
-									"key": "payment_method_id",
-									"value": "3",
-									"type": "text"
-								}
-							]
-						},
 						"url": {
-							"raw": "{{url}}/users/topup",
+							"raw": "{{url}}/users/balance",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"users",
-								"topup"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "TRANSFER",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "transaction_type",
-									"value": "transfer",
-									"type": "text"
-								},
-								{
-									"key": "amount",
-									"value": "1",
-									"type": "text"
-								},
-								{
-									"key": "description",
-									"value": "transfer ",
-									"type": "text"
-								},
-								{
-									"key": "sender_id",
-									"value": "1",
-									"type": "text"
-								},
-								{
-									"key": "receiver_id",
-									"value": "2",
-									"type": "text"
-								},
-								{
-									"key": "payment_method_id",
-									"value": "2",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/users/transfer",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"users",
-								"transfer"
+								"balance"
 							]
 						}
 					},
@@ -489,6 +350,107 @@
 							"path": [
 								"users",
 								"pin"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TRANSACTION",
+			"item": [
+				{
+					"name": "TRANSFER",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NTEyMDkxOTMsInVzZXJJZCI6N30.jmKsFCAKokM6ujWYOPEHUq4bVEgfkjO2-koCJsLVrvg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "transaction_type",
+									"value": "transfer",
+									"type": "text"
+								},
+								{
+									"key": "amount",
+									"value": "60000",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "transfer ",
+									"type": "text"
+								},
+								{
+									"key": "receiver_id",
+									"value": "2",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/transaction/transfer",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"transaction",
+								"transfer"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TOPUP",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NTEyMDkxOTMsInVzZXJJZCI6N30.jmKsFCAKokM6ujWYOPEHUq4bVEgfkjO2-koCJsLVrvg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "amount",
+									"value": "200000",
+									"type": "text"
+								},
+								{
+									"key": "payment_method_id",
+									"value": "3",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/transaction/topup",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"transaction",
+								"topup"
 							]
 						}
 					},
