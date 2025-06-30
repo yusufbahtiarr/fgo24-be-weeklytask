@@ -73,7 +73,6 @@ func AuthRegister(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("ctr auth:", user)
 	err = models.RegisterUser(user)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, models.Response{
