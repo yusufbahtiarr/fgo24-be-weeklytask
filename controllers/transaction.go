@@ -25,7 +25,7 @@ func CreateTransactionTransfer(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, models.Response{
 			Success: false,
-			Message: "Failed to create transaction transfer.",
+			Message: err.Error(),
 		})
 		return
 	}

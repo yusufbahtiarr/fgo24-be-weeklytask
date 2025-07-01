@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"fgo24-be-ewallet/utils"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -37,23 +38,71 @@ func CreateTransactionTransfer(transaction TransactionTransfer, userId int) erro
 		return err
 	}
 	defer conn.Close()
-	transfer := "transfer"
 
-	_, err = conn.Exec(
+	trx, err := conn.Begin(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction")
+	}
+	defer trx.Rollback(context.Background())
+
+	var currentBalance float64
+	err = trx.QueryRow(
+		context.Background(),
+		"SELECT balance FROM users WHERE id = $1 FOR UPDATE",
+		userId,
+	).Scan(&currentBalance)
+
+	if err != nil {
+		return fmt.Errorf("failed get balance user: (%w)", err)
+	}
+
+	if currentBalance < float64(transaction.Amount) {
+		return fmt.Errorf("insufficient balance")
+	}
+
+	_, err = trx.Exec(
+		context.Background(),
+		"UPDATE users SET balance = balance - $1 WHERE id = $2",
+		transaction.Amount, userId,
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to sender balance: (%w)", err)
+	}
+
+	_, err = trx.Exec(
+		context.Background(),
+		"UPDATE users SET balance = balance + $1 WHERE id = $2",
+		transaction.Amount, transaction.ReceiverId,
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to update receiver balance: (%w)", err)
+	}
+
+	_, err = trx.Exec(
 		context.Background(),
 		`INSERT INTO transactions (transaction_type, amount, description, sender_id, receiver_id) VALUES ($1, $2, $3, $4, $5)`,
-		transfer,
+		"transfer",
 		transaction.Amount,
 		transaction.Description,
 		userId,
 		transaction.ReceiverId,
 	)
 
+	// if err != nil {
+	// 	if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
+	// 		return err
+	// 	}
+	// 	return err
+	// }
+
 	if err != nil {
-		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
-			return err
-		}
-		return err
+		return fmt.Errorf("failed to insert transaction: %w", err)
+	}
+
+	if err := trx.Commit(context.Background()); err != nil {
+		return fmt.Errorf("failed to commit transaction: (%w)", err)
 	}
 
 	return nil
