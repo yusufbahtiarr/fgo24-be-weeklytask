@@ -5,8 +5,6 @@ import (
 	"fgo24-be-ewallet/utils"
 	"fmt"
 	"time"
-
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Transaction struct {
@@ -90,13 +88,6 @@ func CreateTransactionTransfer(transaction TransactionTransfer, userId int) erro
 		transaction.ReceiverId,
 	)
 
-	// if err != nil {
-	// 	if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
-	// 		return err
-	// 	}
-	// 	return err
-	// }
-
 	if err != nil {
 		return fmt.Errorf("failed to insert transaction: %w", err)
 	}
@@ -114,22 +105,38 @@ func CreateTransactionTopup(transaction TransactionTopup, userId int) error {
 		return err
 	}
 	defer conn.Close()
-	topup := "topup"
+
+	trx, err := conn.Begin(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction")
+	}
+	defer trx.Rollback(context.Background())
+
+	_, err = trx.Exec(
+		context.Background(),
+		"UPDATE users SET balance = balance + $1 WHERE id = $2",
+		transaction.Amount, userId,
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to update balance: (%w)", err)
+	}
 
 	_, err = conn.Exec(
 		context.Background(),
 		`INSERT INTO transactions (transaction_type, amount, receiver_id, payment_method_id) VALUES ($1, $2, $3, $4)`,
-		topup,
+		"topup",
 		transaction.Amount,
 		userId,
 		transaction.PaymentMethodId,
 	)
 
 	if err != nil {
-		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
-			return err
-		}
-		return err
+		return fmt.Errorf("failed to insert transaction: (%w)", err)
+	}
+
+	if err := trx.Commit(context.Background()); err != nil {
+		return fmt.Errorf("failed to commit transaction: (%w)", err)
 	}
 
 	return nil

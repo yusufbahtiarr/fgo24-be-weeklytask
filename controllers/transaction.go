@@ -54,7 +54,7 @@ func CreateTransactionTopup(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, models.Response{
 			Success: false,
-			Message: "Failed to create transaction topup.",
+			Message: err.Error(),
 		})
 		return
 	}
