@@ -195,22 +195,12 @@ func UpdatePin(ctx *gin.Context) {
 func GetUserByName(ctx *gin.Context) {
 	searchQy := ctx.Query("search")
 
-	fmt.Println("search:", searchQy)
-	if searchQy == "" {
-		ctx.JSON(http.StatusBadRequest, models.Response{
-			Success: false,
-			Message: "Search query parameter 'search' is required",
-		})
-		return
-	}
-
 	users, err := models.FindUserByName(searchQy)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, models.Response{
 				Success: false,
 				Message: "no users matching the search criteria",
-				Results: []models.User{},
 			})
 			return
 		}
